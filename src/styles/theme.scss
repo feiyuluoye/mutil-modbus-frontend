@@ -1,0 +1,12 @@
+:root {
+  --color-bg: #0b1220;
+  --color-surface: #0f172a;
+  --color-border: #1f2937;
+  --color-text: #e2e8f0;
+  --color-primary: #3b82f6; /* blue-500 */
+}
+
+body { background: var(--color-bg); color: var(--color-text); }
+
+.el-card { background: var(--color-surface) !important; border-color: var(--color-border) !important; }
+.el-table { --el-table-bg-color: var(--color-surface); }
