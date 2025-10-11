@@ -29,6 +29,12 @@
         <el-select v-model="deviceId" placeholder="Device" clearable style="width:220px">
           <el-option v-for="d in devices" :key="d.DeviceID" :label="d.DeviceID" :value="d.DeviceID" />
         </el-select>
+        <el-select v-model="refreshMs" style="width:160px" placeholder="刷新间隔">
+          <el-option :value="500" label="刷新 0.5s" />
+          <el-option :value="1000" label="刷新 1s" />
+          <el-option :value="2000" label="刷新 2s" />
+          <el-option :value="5000" label="刷新 5s" />
+        </el-select>
       </div>
 
       <el-table :data="filtered" height="540">
@@ -44,7 +50,7 @@
 
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount, ref, computed, watch } from 'vue'
-import { listDevicesByServer } from '../api/db'
+import { listDevicesByServer, latestPoints } from '../api/db'
 import { subscribePoints, type PointMsg } from '../api/stream'
 import { useAppStore } from '../stores/app'
 
@@ -67,22 +73,30 @@ const runtimePreview = computed(() => runtimeRunning.value.slice(0, 10).map((r:a
 })))
 
 const rows = ref<PointMsg[]>([])
+const MAX_ROWS = 500
+const refreshMs = ref<number>(1000) // user-controlled refresh interval (ms)
 let stop: (() => void) | null = null
 let runtimeTimer: any = null
+let pointsTimer: any = null
+const lastSeen = new Map<string, string>() // key => ISO time
+const pending = new Map<string, PointMsg>() // latest per key waiting to flush
+let flushTimer: any = null
 
 onMounted(async () => {
   await Promise.all([app.loadServers(), app.loadStats(), app.loadRuntime()])
   if (app.servers.length) { serverId.value = app.servers[0].ServerID }
   await loadDevices()
-  stop = subscribePoints((m) => {
-    rows.value.unshift(m)
-    if (rows.value.length > 2000) rows.value.pop()
-  })
+  startStream()
+  // polling fallback to ensure updates even if SSE has only heartbeat
+  startPolling()
   runtimeTimer = setInterval(() => { app.loadRuntime() }, 5000)
+  startFlushLoop()
 })
-onBeforeUnmount(() => { if (stop) stop(); if (runtimeTimer) clearInterval(runtimeTimer) })
+onBeforeUnmount(() => { if (stop) stop(); if (runtimeTimer) clearInterval(runtimeTimer); if (pointsTimer) clearInterval(pointsTimer); if (flushTimer) clearInterval(flushTimer) })
 
-watch(serverId, async () => { await loadDevices() })
+watch(serverId, async () => { await loadDevices(); restartStream(); restartPolling() })
+watch(deviceId, () => { restartStream(); restartPolling() })
+watch(refreshMs, () => { restartPolling(); restartFlushLoop() })
 
 async function loadDevices() {
   if (!serverId.value) { devices.value = []; return }
@@ -94,6 +108,93 @@ const filtered = computed(() => rows.value.filter(r =>
   (!serverId.value || r.server_id === serverId.value) &&
   (!deviceId.value || r.device_id === deviceId.value)
 ))
+
+function startStream() {
+  if (stop) stop()
+  stop = subscribePoints((m) => {
+    const key = `${m.server_id}|${m.device_id}|${m.name}`
+    // keep only the latest per key in pending buffer
+    const prev = pending.get(key)
+    if (!prev || (m.timestamp && m.timestamp > (prev.timestamp || ''))) {
+      pending.set(key, m)
+    }
+  }, {
+    server_id: serverId.value || undefined,
+    device_id: deviceId.value || undefined,
+  })
+}
+
+function restartStream() {
+  // keep current rows; just adjust the upstream filter
+  startStream()
+}
+
+function startPolling() {
+  if (pointsTimer) clearInterval(pointsTimer)
+  pointsTimer = setInterval(pollLatest, Math.max(refreshMs.value, 1000))
+}
+
+function restartPolling() {
+  startPolling()
+}
+
+async function pollLatest() {
+  try {
+    const params: any = {}
+    if (serverId.value) params.server_id = serverId.value
+    if (deviceId.value) params.device_id = deviceId.value
+    const resp = await latestPoints(params)
+    const arr: any[] = Array.isArray(resp.data) ? resp.data : (resp.data.data ?? resp.data.rows ?? [])
+    for (const r of arr) {
+      const m: PointMsg = {
+        server_id: r.server_id ?? r.ServerID ?? '',
+        device_id: r.device_id ?? r.DeviceID ?? '',
+        name: r.name ?? r.Name ?? '',
+        value: r.value ?? r.Value ?? 0,
+        timestamp: r.timestamp ?? r.Timestamp ?? ''
+      }
+      const key = `${m.server_id}|${m.device_id}|${m.name}`
+      const prev = lastSeen.get(key) || ''
+      // Only append if new or newer
+      if (!prev || (m.timestamp && m.timestamp > prev)) {
+        // enqueue for batched flush to avoid UI thrash
+        const ex = pending.get(key)
+        if (!ex || (m.timestamp && m.timestamp > (ex.timestamp || ''))) {
+          pending.set(key, m)
+        }
+      }
+    }
+  } catch {
+    // ignore errors; next tick will retry
+  }
+}
+
+function startFlushLoop() {
+  if (flushTimer) clearInterval(flushTimer)
+  flushTimer = setInterval(() => {
+    if (pending.size === 0) return
+    const batch = Array.from(pending.values())
+    pending.clear()
+    // insert newest first for better UX
+    batch.sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || ''))
+    for (const m of batch) {
+      const key = `${m.server_id}|${m.device_id}|${m.name}`
+      const prev = lastSeen.get(key) || ''
+      if (!prev || (m.timestamp && m.timestamp > prev)) {
+        rows.value.unshift(m)
+        lastSeen.set(key, m.timestamp)
+      }
+    }
+    // cap rows length for performance
+    if (rows.value.length > MAX_ROWS) {
+      rows.value.splice(MAX_ROWS)
+    }
+  }, Math.max(refreshMs.value, 100))
+}
+
+function restartFlushLoop() {
+  startFlushLoop()
+}
 </script>
 
 <style scoped>

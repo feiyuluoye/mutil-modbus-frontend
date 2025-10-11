@@ -1,9 +1,14 @@
+<script setup lang="ts">
+ import { useRoute } from 'vue-router'
+ const route = useRoute()
+</script>
+
 <template>
   <el-config-provider namespace="el">
     <div class="layout">
       <aside class="sidebar">
         <div class="brand">Collector</div>
-        <el-menu router :default-active="$route.path" class="menu" background-color="#0f172a" text-color="#cbd5e1" active-text-color="#60a5fa">
+        <el-menu router :default-active="route.path" class="menu" background-color="#0f172a" text-color="#cbd5e1" active-text-color="#60a5fa">
           <el-menu-item index="/">Dashboard</el-menu-item>
           <el-menu-item index="/servers">Servers</el-menu-item>
           <el-menu-item index="/devices">Devices</el-menu-item>
