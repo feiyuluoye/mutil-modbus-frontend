@@ -2,9 +2,18 @@
   <div class="grid gap">
     <el-card>
       <div class="stats">
-        <div class="stat"><div class="label">Servers</div><div class="val">{{ serversCount }}</div></div>
-        <div class="stat"><div class="label">Devices</div><div class="val">{{ devicesCount }}</div></div>
-        <div class="stat"><div class="label">Collectors</div><div class="val">{{ collectorsCount }}</div></div>
+        <div class="metric neon blue">
+          <div class="label">Servers</div>
+          <div class="value">{{ serversCount }}</div>
+        </div>
+        <div class="metric neon green">
+          <div class="label">Devices</div>
+          <div class="value">{{ devicesCount }}</div>
+        </div>
+        <div class="metric neon yellow">
+          <div class="label">Collectors</div>
+          <div class="value">{{ collectorsCount }}</div>
+        </div>
       </div>
     </el-card>
 
@@ -195,13 +204,32 @@ function startFlushLoop() {
 function restartFlushLoop() {
   startFlushLoop()
 }
+
+function refreshRuntime() {
+  app.loadRuntime()
+}
 </script>
 
 <style scoped>
-.grid { display: grid; grid-template-rows: auto 1fr; gap: 16px; }
-.stats { display:flex; gap:24px; }
-.stat { background:#0f172a; border:1px solid #1f2937; padding:12px 16px; border-radius:8px; }
-.label { color:#94a3b8; font-size:12px; }
-.val { color:#60a5fa; font-size:24px; font-weight:700; }
+.grid { display: grid; grid-template-rows: auto auto 1fr; gap: 16px; }
+.stats { display:grid; grid-template-columns: repeat(3, minmax(160px, 1fr)); gap:16px; }
 .filters { display:flex; gap:12px; margin-bottom:12px; }
+.runtime-head { display:flex; align-items:center; gap:12px; margin-bottom:8px; }
+.runtime-head .title{ font-weight:700; color:#e2e8f0; }
+.runtime-head .muted{ color:#94a3b8; flex:1 }
+.metric {
+  background: linear-gradient(135deg, #0f172a 0%, #1f2937 100%);
+  border: 1px solid #1f2937;
+  padding: 12px 16px;
+  border-radius: 8px;
+}
+.metric .label {
+  color: #94a3b8;
+  font-size: 12px;
+}
+.metric .value {
+  color: #60a5fa;
+  font-size: 24px;
+  font-weight: 700;
+}
 </style>

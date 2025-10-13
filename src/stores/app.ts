@@ -16,6 +16,7 @@ export const useAppStore = defineStore('app', {
     loadingStats: false,
     runtimeRunning: [] as any[],
     loadingRuntime: false,
+    online: true as boolean,
   }),
   actions: {
     async loadServers() {
@@ -50,6 +51,10 @@ export const useAppStore = defineStore('app', {
         const res = await getRuntimeState()
         const d = res.data || {}
         this.runtimeRunning = Array.isArray(d.running) ? d.running : []
+        this.online = true
+      } catch (e) {
+        this.online = false
+        this.runtimeRunning = []
       } finally {
         this.loadingRuntime = false
       }
