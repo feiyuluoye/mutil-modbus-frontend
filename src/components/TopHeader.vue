@@ -27,15 +27,15 @@
   <header class="topbar">
     <div class="left">
       <img class="logo" alt="logo" src="/logo.svg" @error="hideOnError"/>
-      <div class="brand">TopWay 陶化线自动监控系统</div>
+      <div class="brand">Modbus数据自动监控系统</div>
       <div class="tabs">
         <el-button :class="['tab-pill', { active: active==='/' }]" text @click="go('/')">首页</el-button>
         <el-button :class="['tab-pill', { active: active==='/alarms' }]" text @click="go('/alarms')">报警记录</el-button>
-        <el-button :class="['tab-pill', { active: active==='/doses' }]" text @click="go('/doses')">加药记录</el-button>
+        <!-- <el-button :class="['tab-pill', { active: active==='/doses' }]" text @click="go('/doses')">加药记录</el-button> -->
         <el-button :class="['tab-pill', { active: active==='/analysis' }]" text @click="go('/analysis')">分析记录</el-button>
         <el-dropdown @command="go">
           <span class="el-dropdown-link">
-            <el-button class="tab-pill" text>运维</el-button>
+            <el-button class="tab-pill" text>管理与运维</el-button>
           </span>
           <template #dropdown>
             <el-dropdown-menu>
