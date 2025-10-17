@@ -51,6 +51,9 @@
         <el-table-column prop="server_id" label="Server" width="160" />
         <el-table-column prop="device_id" label="Device" width="200" />
         <el-table-column prop="name" label="Point" />
+        <el-table-column prop="address" label="Address" width="160" />
+        <el-table-column prop="unit" label="Uint" width="160" />
+        <el-table-column prop="data_type" label="data_type" width="160" />
         <el-table-column prop="value" label="Value" width="140" />
       </el-table>
     </el-card>
@@ -160,8 +163,11 @@ async function pollLatest() {
         device_id: r.device_id ?? r.DeviceID ?? '',
         name: r.name ?? r.Name ?? '',
         value: r.value ?? r.Value ?? 0,
-        timestamp: r.timestamp ?? r.Timestamp ?? ''
-      }
+        timestamp: r.timestamp ?? r.Timestamp ?? '',
+        data_type: r.data_type ?? r.DataType ?? '',
+        unit: r.unit ?? r.Unit ?? '',
+        address: r.address ?? r.Address ?? '',
+      } 
       const key = `${m.server_id}|${m.device_id}|${m.name}`
       const prev = lastSeen.get(key) || ''
       // Only append if new or newer

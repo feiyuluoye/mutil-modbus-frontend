@@ -31,7 +31,7 @@
       <el-table-column prop="device_id" label="Device" width="200" />
       <el-table-column prop="name" label="Point" min-width="160" />
       <el-table-column prop="uint" label="Unit" min-width="160" />
-      <el-table-column prop="data_type" label="Offset" min-width="140" />
+      <el-table-column prop="data_type" label="DataType" min-width="140" />
       <el-table-column prop="value" label="Value" width="160" />
     </el-table>
 

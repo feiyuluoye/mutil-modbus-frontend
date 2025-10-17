@@ -4,6 +4,9 @@ export type PointMsg = {
   name: string
   value: number
   timestamp: string
+  data_type: string
+  unit: string
+  address: string 
 }
 
 type SSEEvent<T> = {
@@ -13,6 +16,9 @@ type SSEEvent<T> = {
   device_id?: string
   name?: string
   timestamp: string
+  data_type: string
+  unit: string
+  address: string 
 }
 
 type Filter = { server_id?: string; device_id?: string; name?: string }
@@ -53,7 +59,10 @@ export function subscribePoints(
                 device_id: ev.device_id ?? d.device_id ?? d.DeviceID ?? '',
                 name: ev.name ?? d.name ?? d.Name ?? '',
                 value: d.value ?? d.Value ?? 0,
-                timestamp: ev.timestamp ?? d.timestamp ?? d.Timestamp ?? ''
+                timestamp: ev.timestamp ?? d.timestamp ?? d.Timestamp ?? '',
+                address: ev.address ?? d.address ?? d.Address ?? '',
+                unit: ev.unit ?? d.unit ?? d.Unit ?? '',
+                data_type: ev.data_type ?? d.data_type ?? d.DataType ?? '',
               }
             }
             // Already PointMsg shape
