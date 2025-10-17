@@ -26,14 +26,13 @@
     </div>
 
     <el-table :data="rows" height="560" v-loading="loading">
-      <el-table-column prop="Timestamp" label="Time" width="200" />
-      <el-table-column prop="ServerID" label="Server" width="160" />
-      <el-table-column prop="DeviceID" label="Device" width="200" />
-      <el-table-column prop="Name" label="Point" min-width="160" />
-      <el-table-column prop="Unit" label="Unit" min-width="160" />
-      <el-table-column prop="Scale" label="Scale" min-width="160" />
-      <el-table-column prop="Offset" label="Offset" min-width="160" />
-      <el-table-column prop="Value" label="Value" width="140" />
+      <el-table-column prop="timestamp" label="Time" width="200" />
+      <el-table-column prop="server_id" label="Server" width="160" />
+      <el-table-column prop="device_id" label="Device" width="200" />
+      <el-table-column prop="name" label="Point" min-width="160" />
+      <el-table-column prop="uint" label="Unit" min-width="160" />
+      <el-table-column prop="data_type" label="Offset" min-width="140" />
+      <el-table-column prop="value" label="Value" width="160" />
     </el-table>
 
     <div class="pager">
