@@ -45,8 +45,9 @@
           <el-option :value="5000" label="刷新 5s" />
         </el-select>
       </div>
+      <div class="summary">总条数：{{ totalCount }}，总页数：{{ totalPages }}</div>
 
-      <el-table :data="filtered" height="540">
+      <el-table :data="paged" height="540">
         <el-table-column prop="timestamp" label="Time" width="180" />
         <el-table-column prop="server_id" label="Server" width="160" />
         <el-table-column prop="device_id" label="Device" width="200" />
@@ -56,6 +57,19 @@
         <el-table-column prop="data_type" label="data_type" width="160" />
         <el-table-column prop="value" label="Value" width="140" />
       </el-table>
+
+      <div class="pager">
+        <el-pagination
+          background
+          layout="prev, pager, next, sizes, total"
+          :total="totalCount"
+          :page-size="pageSize"
+          :page-sizes="[20, 50, 100, 200]"
+          :current-page="currentPage"
+          @current-change="onPageChange"
+          @size-change="onSizeChange"
+        />
+      </div>
     </el-card>
   </div>
 </template>
@@ -94,6 +108,16 @@ const lastSeen = new Map<string, string>() // key => ISO time
 const pending = new Map<string, PointMsg>() // latest per key waiting to flush
 let flushTimer: any = null
 
+// pagination state
+const pageSize = ref<number>(50)
+const currentPage = ref<number>(1)
+const totalCount = computed(() => filtered.value.length)
+const totalPages = computed(() => Math.max(1, Math.ceil(totalCount.value / pageSize.value)))
+const paged = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value
+  return filtered.value.slice(start, start + pageSize.value)
+})
+
 onMounted(async () => {
   await Promise.all([app.loadServers(), app.loadStats(), app.loadRuntime()])
   if (app.servers.length) { serverId.value = app.servers[0].ServerID }
@@ -106,8 +130,8 @@ onMounted(async () => {
 })
 onBeforeUnmount(() => { if (stop) stop(); if (runtimeTimer) clearInterval(runtimeTimer); if (pointsTimer) clearInterval(pointsTimer); if (flushTimer) clearInterval(flushTimer) })
 
-watch(serverId, async () => { await loadDevices(); restartStream(); restartPolling() })
-watch(deviceId, () => { restartStream(); restartPolling() })
+watch(serverId, async () => { await loadDevices(); currentPage.value = 1; restartStream(); restartPolling() })
+watch(deviceId, () => { currentPage.value = 1; restartStream(); restartPolling() })
 watch(refreshMs, () => { restartPolling(); restartFlushLoop() })
 
 async function loadDevices() {
@@ -121,20 +145,6 @@ const filtered = computed(() => rows.value.filter(r =>
   (!deviceId.value || r.device_id === deviceId.value)
 ))
 
-function startStream() {
-  if (stop) stop()
-  stop = subscribePoints((m) => {
-    const key = `${m.server_id}|${m.device_id}|${m.name}`
-    // keep only the latest per key in pending buffer
-    const prev = pending.get(key)
-    if (!prev || (m.timestamp && m.timestamp > (prev.timestamp || ''))) {
-      pending.set(key, m)
-    }
-  }, {
-    server_id: serverId.value || undefined,
-    device_id: deviceId.value || undefined,
-  })
-}
 
 function restartStream() {
   // keep current rows; just adjust the upstream filter
@@ -214,12 +224,23 @@ function restartFlushLoop() {
 function refreshRuntime() {
   app.loadRuntime()
 }
+
+function onPageChange(p: number) {
+  currentPage.value = p
+}
+
+function onSizeChange(s: number) {
+  pageSize.value = s
+  currentPage.value = 1
+}
 </script>
 
 <style scoped>
 .grid { display: grid; grid-template-rows: auto auto 1fr; gap: 16px; }
 .stats { display:grid; grid-template-columns: repeat(3, minmax(160px, 1fr)); gap:16px; }
 .filters { display:flex; gap:12px; margin-bottom:12px; }
+.summary { color:#94a3b8; margin: 4px 0 8px; }
+.pager { display:flex; justify-content:flex-end; margin-top:8px; }
 .runtime-head { display:flex; align-items:center; gap:12px; margin-bottom:8px; }
 .runtime-head .title{ font-weight:700; color:#e2e8f0; }
 .runtime-head .muted{ color:#94a3b8; flex:1 }
