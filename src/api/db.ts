@@ -14,6 +14,7 @@ export const deleteDevice = (deviceId: string) => http.delete(`/db/devices/${dev
 
 export const listPointValues = (params: any) => http.get('/db/point_values', { params })
 export const latestPoints = (params?: any) => http.get('/db/points/latest', { params })
+export const queryPointsPaged = (params: any) => http.get('/db/points/query', { params })
 
 // Aggregated statistics
 export const getStats = () => http.get('/db/stats')

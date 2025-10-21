@@ -45,8 +45,6 @@
           <el-option :value="5000" label="刷新 5s" />
         </el-select>
       </div>
-      <div class="summary">总条数：{{ totalCount }}，总页数：{{ totalPages }}</div>
-
       <el-table :data="paged" height="540">
         <el-table-column prop="timestamp" label="Time" width="180" />
         <el-table-column prop="server_id" label="Server" width="160" />
@@ -57,19 +55,6 @@
         <el-table-column prop="data_type" label="data_type" width="160" />
         <el-table-column prop="value" label="Value" width="140" />
       </el-table>
-
-      <div class="pager">
-        <el-pagination
-          background
-          layout="prev, pager, next, sizes, total"
-          :total="totalCount"
-          :page-size="pageSize"
-          :page-sizes="[20, 50, 100, 200]"
-          :current-page="currentPage"
-          @current-change="onPageChange"
-          @size-change="onSizeChange"
-        />
-      </div>
     </el-card>
   </div>
 </template>
@@ -111,8 +96,6 @@ let flushTimer: any = null
 // pagination state
 const pageSize = ref<number>(50)
 const currentPage = ref<number>(1)
-const totalCount = computed(() => filtered.value.length)
-const totalPages = computed(() => Math.max(1, Math.ceil(totalCount.value / pageSize.value)))
 const paged = computed(() => {
   const start = (currentPage.value - 1) * pageSize.value
   return filtered.value.slice(start, start + pageSize.value)

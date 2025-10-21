@@ -82,9 +82,12 @@ onMounted(async () => {
   console.log(r)
 })
 
-watch(pageSize, () => {
-  resetAndQuery()
-})
+// Trigger query when filter inputs change
+watch(pageSize, () => { resetAndQuery() })
+watch(sid, async () => { await onServerChange(); resetAndQuery() })
+watch(did, () => { resetAndQuery() })
+watch(name, () => { resetAndQuery() })
+watch(dateRange, () => { resetAndQuery() })
 
 async function onServerChange() {
   devices.value = []
