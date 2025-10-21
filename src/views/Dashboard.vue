@@ -63,7 +63,7 @@
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount, ref, computed, watch } from 'vue'
 import { listDevicesByServer, latestPoints } from '../api/db'
-import { subscribePoints, type PointMsg } from '../api/stream'
+import { type PointMsg } from '../api/stream'
 import { useAppStore } from '../stores/app'
 
 const app = useAppStore()
@@ -98,7 +98,7 @@ onMounted(async () => {
   await Promise.all([app.loadServers(), app.loadStats(), app.loadRuntime()])
   if (app.servers.length) { serverId.value = app.servers[0].ServerID }
   await loadDevices()
-  startStream()
+
   // polling fallback to ensure updates even if SSE has only heartbeat
   startPolling()
   runtimeTimer = setInterval(() => { app.loadRuntime() }, 5000)
@@ -138,7 +138,7 @@ function startStream() {
 
 function restartStream() {
   // keep current rows; just adjust the upstream filter
-  startStream()
+  console.log('restartStream', serverId.value, deviceId.value)
 }
 
 function startPolling() {
