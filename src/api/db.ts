@@ -15,6 +15,7 @@ export const deleteDevice = (deviceId: string) => http.delete(`/db/devices/${dev
 export const listPointValues = (params: any) => http.get('/db/point_values', { params })
 export const latestPoints = (params?: any) => http.get('/db/points/latest', { params })
 export const queryPointsPaged = (params: any) => http.get('/db/points/query', { params })
+export const queryPointPropertiesPaged = (params: any) => http.get('/db/point_properties/query', { params })
 
 // Points CRUD (backend endpoints should exist under /db/points)
 export const createPoint = (payload: any) => http.post('/db/points', payload)

@@ -111,7 +111,7 @@ onMounted(async () => {
   runtimeTimer = setInterval(() => { app.loadRuntime() }, 5000)
   startFlushLoop()
 })
-onBeforeUnmount(() => { if (stop) stop(); if (runtimeTimer) clearInterval(runtimeTimer); if (pointsTimer) clearInterval(pointsTimer); if (flushTimer) clearInterval(flushTimer) })
+onBeforeUnmount(() => {if (runtimeTimer) clearInterval(runtimeTimer); if (pointsTimer) clearInterval(pointsTimer); if (flushTimer) clearInterval(flushTimer) })
 
 watch(serverId, async () => { await loadDevices(); currentPage.value = 1; restartStream(); restartPolling() })
 watch(deviceId, () => { currentPage.value = 1; restartStream(); restartPolling() })

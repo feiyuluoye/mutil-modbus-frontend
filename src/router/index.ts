@@ -4,6 +4,7 @@ const Dashboard = () => import('../views/Dashboard.vue')
 const Servers = () => import('../views/Servers.vue')
 const Devices = () => import('../views/Devices.vue')
 const Points = () => import('../views/Points.vue')
+const PointProperties = () => import('../views/PointProperties.vue')
 const Alarms = () => import('../views/AlarmRecords.vue')
 const Doses = () => import('../views/DoseRecords.vue')
 const Analysis = () => import('../views/AnalysisRecords.vue')
@@ -18,6 +19,7 @@ const router = createRouter({
     { path: '/servers', component: Servers },
     { path: '/devices', component: Devices },
     { path: '/points', component: Points },
+    { path: '/point-properties', component: PointProperties },
   ],
 })
 

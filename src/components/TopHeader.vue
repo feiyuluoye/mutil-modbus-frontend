@@ -42,6 +42,7 @@
               <el-dropdown-item command="/servers">Servers</el-dropdown-item>
               <el-dropdown-item command="/devices">Devices</el-dropdown-item>
               <el-dropdown-item command="/points">Points</el-dropdown-item>
+              <el-dropdown-item command="/point-properties">PointProperties</el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>
