@@ -83,7 +83,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
-import { listServers, listDevicesByServer, queryPointPropertiesPaged, createPoint, updatePoint, deletePoint } from '../api/db'
+import { listServers, listDevicesByServer, queryPointPropertiesPaged, createPointProperty, updatePointProperty, deletePointProperty } from '../api/db'
 
 const servers = ref<any[]>([])
 const devices = ref<any[]>([])
@@ -185,14 +185,14 @@ async function editRow(row:any) {
 
 async function save() {
   if (form.value._edit && form.value.HashID) {
-    await updatePoint(form.value.HashID, form.value)
+    await updatePointProperty(form.value.HashID, form.value)
   } else {
     const payload = { ...form.value }
     if (payload.Address !== undefined) {
       const n = Number(payload.Address)
       payload.Address = Number.isFinite(n) ? Math.trunc(n) : 0
     }
-    await createPoint(payload)
+    await createPointProperty(payload)
   }
   drawer.value = false
   await resetAndQuery()
@@ -201,7 +201,7 @@ async function save() {
 async function removeRow(row:any) {
   const id = row.HashID || row.hash_id
   if (!id) return
-  await deletePoint(id)
+  await deletePointProperty(id)
   await resetAndQuery()
 }
 </script>

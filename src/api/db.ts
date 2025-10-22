@@ -16,6 +16,9 @@ export const listPointValues = (params: any) => http.get('/db/point_values', { p
 export const latestPoints = (params?: any) => http.get('/db/points/latest', { params })
 export const queryPointsPaged = (params: any) => http.get('/db/points/query', { params })
 export const queryPointPropertiesPaged = (params: any) => http.get('/db/point_properties/query', { params })
+export const createPointProperty = (payload: any) => http.post('/db/point_properties', payload)
+export const updatePointProperty = (hashId: string, payload: any) => http.put(`/db/point_properties/${hashId}`, payload)
+export const deletePointProperty = (hashId: string) => http.delete(`/db/point_properties/${hashId}`)
 
 // Points CRUD (backend endpoints should exist under /db/points)
 export const createPoint = (payload: any) => http.post('/db/points', payload)
