@@ -189,7 +189,17 @@ function startFlushLoop() {
       const key = `${m.server_id}|${m.device_id}|${m.name}`
       const prev = lastSeen.get(key) || ''
       if (!prev || (m.timestamp && m.timestamp > prev)) {
-        rows.value.unshift(m)
+        // Update existing row if same key exists, otherwise insert new
+        const existingIdx = rows.value.findIndex(r => 
+          r.server_id === m.server_id && r.device_id === m.device_id && r.name === m.name
+        )
+        if (existingIdx >= 0) {
+          // Replace existing row with newer data
+          rows.value.splice(existingIdx, 1, m)
+        } else {
+          // Insert new row at the beginning
+          rows.value.unshift(m)
+        }
         lastSeen.set(key, m.timestamp)
       }
     }
