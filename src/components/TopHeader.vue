@@ -43,6 +43,7 @@
               <el-dropdown-item command="/devices">Devices</el-dropdown-item>
               <el-dropdown-item command="/points">Points</el-dropdown-item>
               <el-dropdown-item command="/point-properties">PointProperties</el-dropdown-item>
+              <el-dropdown-item command="/import" divided>CSV Import</el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>

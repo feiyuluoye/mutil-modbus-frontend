@@ -8,6 +8,7 @@ const PointProperties = () => import('../views/PointProperties.vue')
 const Alarms = () => import('../views/AlarmRecords.vue')
 const Doses = () => import('../views/DoseRecords.vue')
 const Analysis = () => import('../views/AnalysisRecords.vue')
+const Import = () => import('../views/Import.vue')
 
 const router = createRouter({
   history: createWebHistory(),
@@ -20,6 +21,7 @@ const router = createRouter({
     { path: '/devices', component: Devices },
     { path: '/points', component: Points },
     { path: '/point-properties', component: PointProperties },
+    { path: '/import', component: Import },
   ],
 })
 
