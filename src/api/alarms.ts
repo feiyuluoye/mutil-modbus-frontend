@@ -84,9 +84,26 @@ export interface AlarmHistoryRow {
   value: number
   threshold: string
   triggered_at: string
+  status?: 'active' | 'resolved'
+  resolved_at?: string | null
 }
 
 export async function listAlarmHistory(params: { rule_id?: string; hash_id?: string; severity?: AlarmSeverity; start?: string; end?: string; page?: number; size?: number }) {
   const { data } = await http.get<{ rows: AlarmHistoryRow[]; total: number; page: number; size: number; total_pages: number }>(`/alarms/history`, { params })
+  return data
+}
+
+export async function resolveHistory(id: number) {
+  const { data } = await http.post<{ ok: boolean }>(`/alarms/history/${id}/resolve`)
+  return data
+}
+
+export async function muteAlarm(id: string) {
+  const { data } = await http.post<{ ok: boolean }>(`/alarms/${id}/mute`)
+  return data
+}
+
+export async function unmuteAlarm(id: string) {
+  const { data } = await http.post<{ ok: boolean }>(`/alarms/${id}/unmute`)
   return data
 }
