@@ -44,10 +44,11 @@
           </template>
         </el-table-column>
         <el-table-column prop="last_triggered_at" label="Last Triggered" width="180" />
-        <el-table-column label="Actions" width="160">
+        <el-table-column label="Actions" width="240">
           <template #default="{ row }">
             <el-button size="small" @click="openEdit(row)">Edit</el-button>
             <el-button size="small" type="danger" @click="onDelete(row)">Delete</el-button>
+            <el-button size="small" type="primary" @click="goHistory(row)">History</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -72,12 +73,14 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import AlarmForm from '../components/AlarmForm.vue'
 import { type AlarmRule } from '../api/alarms'
 import { useAlarmStore } from '../stores/alarm'
 
 const store = useAlarmStore()
+const router = useRouter()
 const list = store.$state.rows as unknown as AlarmRule[]
 const loading = store.$state.loading
 const page = ref(store.page)
@@ -123,16 +126,27 @@ function renderCondition(r: AlarmRule) {
   if (t.type === 'threshold') {
     if (t.operator === 'between') return `Value between ${t.value1} & ${t.value2}`
     if (t.operator === 'outside') return `Value outside ${t.value1} & ${t.value2}`
-    return `Value ${t.operator} ${t.value1}`
+    const base = `Value ${t.operator} ${t.value1}`
+    if (t.delay?.enabled && t.delay.value) return `${base} (delay ${t.delay.value} ${t.delay.unit || 'sec'})`
+    return base
   }
   if (t.type === 'state') {
-    return `Value ${t.operator} ${t.value1}`
+    const base = `Value ${t.operator} ${t.value1}`
+    if (t.delay?.enabled && t.delay.value) return `${base} (delay ${t.delay.value} ${t.delay.unit || 'sec'})`
+    return base
   }
   if (t.type === 'offline') {
     const d = t.offline_duration
-    return d ? `No updates within ${d.value} ${d.unit}` : 'Offline'
+    const base = d ? `No updates within ${d.value} ${d.unit}` : 'Offline'
+    if (t.delay?.enabled && t.delay.value) return `${base} (delay ${t.delay.value} ${t.delay.unit || 'sec'})`
+    return base
   }
   return '-'
+}
+
+function goHistory(row: AlarmRule) {
+  if (!row?.id) return
+  router.push({ path: '/alarms', query: { rule_id: row.id } })
 }
 
 const formVisible = ref(false)
