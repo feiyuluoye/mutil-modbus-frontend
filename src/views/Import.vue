@@ -39,6 +39,14 @@
                 Import Servers
               </el-button>
               <el-button @click="clearServers">Clear</el-button>
+              <el-button @click="downloadServersTemplate" plain>Download Template</el-button>
+            </div>
+
+            <div v-if="serversPreview.rows.length" class="preview">
+              <h4>Preview (first 100 rows)</h4>
+              <el-table :data="serversPreview.rows.slice(0, 100)" height="360">
+                <el-table-column v-for="h in serversPreview.headers" :key="h" :prop="h" :label="h" show-overflow-tooltip />
+              </el-table>
             </div>
 
             <div v-if="results.servers" class="result">
@@ -93,6 +101,14 @@
                 Import Devices
               </el-button>
               <el-button @click="clearDevices">Clear</el-button>
+              <el-button @click="downloadDevicesTemplate" plain>Download Template</el-button>
+            </div>
+
+            <div v-if="devicesPreview.rows.length" class="preview">
+              <h4>Preview (first 100 rows)</h4>
+              <el-table :data="devicesPreview.rows.slice(0, 100)" height="360">
+                <el-table-column v-for="h in devicesPreview.headers" :key="h" :prop="h" :label="h" show-overflow-tooltip />
+              </el-table>
             </div>
 
             <div v-if="results.devices" class="result">
@@ -147,6 +163,14 @@
                 Import Points
               </el-button>
               <el-button @click="clearPoints">Clear</el-button>
+              <el-button @click="downloadPointsTemplate" plain>Download Template</el-button>
+            </div>
+
+            <div v-if="pointsPreview.rows.length" class="preview">
+              <h4>Preview (first 100 rows)</h4>
+              <el-table :data="pointsPreview.rows.slice(0, 100)" height="360">
+                <el-table-column v-for="h in pointsPreview.headers" :key="h" :prop="h" :label="h" show-overflow-tooltip />
+              </el-table>
             </div>
 
             <div v-if="results.points" class="result">
@@ -199,6 +223,10 @@ const uploading = ref({
   points: false
 })
 
+const serversPreview = ref<{ headers: string[]; rows: any[] }>({ headers: [], rows: [] })
+const devicesPreview = ref<{ headers: string[]; rows: any[] }>({ headers: [], rows: [] })
+const pointsPreview = ref<{ headers: string[]; rows: any[] }>({ headers: [], rows: [] })
+
 const results = ref<{
   servers: CSVImportResult | null
   devices: CSVImportResult | null
@@ -209,19 +237,89 @@ const results = ref<{
   points: null
 })
 
+function parseCSVFile(file: File): Promise<{ headers: string[]; rows: any[] }> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onerror = () => reject(new Error('Failed to read file'))
+    reader.onload = () => {
+      try {
+        const text = String(reader.result || '')
+        const { headers, rows } = simpleCSVParse(text)
+        resolve({ headers, rows })
+      } catch (e) {
+        reject(e)
+      }
+    }
+    reader.readAsText(file)
+  })
+}
+
+function simpleCSVParse(text: string): { headers: string[]; rows: any[] } {
+  // minimal CSV parser supporting quoted fields and commas
+  const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').filter(l => l.length > 0)
+  if (lines.length === 0) return { headers: [], rows: [] }
+  const parseLine = (line: string): string[] => {
+    const out: string[] = []
+    let cur = ''
+    let inQuotes = false
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i]
+      if (inQuotes) {
+        if (ch === '"') {
+          if (i + 1 < line.length && line[i + 1] === '"') { cur += '"'; i++ } else { inQuotes = false }
+        } else { cur += ch }
+      } else {
+        if (ch === ',') { out.push(cur); cur = '' }
+        else if (ch === '"') { inQuotes = true }
+        else { cur += ch }
+      }
+    }
+    out.push(cur)
+    return out.map(s => s.trim())
+  }
+  const headers = parseLine(lines[0])
+  const rows = [] as any[]
+  for (let i = 1; i < lines.length; i++) {
+    const cols = parseLine(lines[i])
+    if (cols.length === 1 && cols[0] === '') continue
+    const obj: any = {}
+    headers.forEach((h, idx) => { obj[h] = cols[idx] ?? '' })
+    rows.push(obj)
+  }
+  return { headers, rows }
+}
+
 function handleServersChange(file: UploadFile) {
   serversFile.value = file.raw || null
   results.value.servers = null
+  serversPreview.value = { headers: [], rows: [] }
+  if (serversFile.value) {
+    parseCSVFile(serversFile.value).then(res => { serversPreview.value = res }).catch(() => {
+      ElMessage.warning('Failed to parse CSV preview')
+    })
+  }
 }
 
 function handleDevicesChange(file: UploadFile) {
   devicesFile.value = file.raw || null
   results.value.devices = null
+  devicesPreview.value = { headers: [], rows: [] }
+  if (devicesFile.value) {
+    parseCSVFile(devicesFile.value).then(res => { devicesPreview.value = res }).catch(() => {
+      ElMessage.warning('Failed to parse CSV preview')
+    })
+  }
 }
 
 function handlePointsChange(file: UploadFile) {
   pointsFile.value = file.raw || null
   results.value.points = null
+  pointsPreview.value = { headers: [], rows: [] }
+  if (pointsFile.value) {
+    parseCSVFile(pointsFile.value).then(res => { pointsPreview.value = res }).catch(() => {
+      ElMessage.warning('Failed to parse CSV preview')
+    })
+  }
 }
 
 function handleExceed() {
@@ -289,18 +387,54 @@ function clearServers() {
   serversUpload.value?.clearFiles()
   serversFile.value = null
   results.value.servers = null
+  serversPreview.value = { headers: [], rows: [] }
 }
 
 function clearDevices() {
   devicesUpload.value?.clearFiles()
   devicesFile.value = null
   results.value.devices = null
+  devicesPreview.value = { headers: [], rows: [] }
 }
 
 function clearPoints() {
   pointsUpload.value?.clearFiles()
   pointsFile.value = null
   results.value.points = null
+  pointsPreview.value = { headers: [], rows: [] }
+}
+
+function downloadCSVTemplate(filename: string, headers: string[]) {
+  const csv = headers.join(',') + '\n'
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}
+
+function downloadServersTemplate() {
+  downloadCSVTemplate('servers_template.csv', [
+    'Server_ID','Server_Name','Protocol','Host','Port',
+    'Path','Baud_Rate','Data_Bits','Stop_Bits','Parity',
+    'Timeout','Retry_Count','Enabled','Type'
+  ])
+}
+
+function downloadDevicesTemplate() {
+  downloadCSVTemplate('devices_template.csv', [
+    'Server_ID','Device_ID','Vendor','Slave_ID','Poll_Interval'
+  ])
+}
+
+function downloadPointsTemplate() {
+  downloadCSVTemplate('points_template.csv', [
+    'Server_ID','Device_ID','Point_Name','Address','Register_Type','Data_Type','Byte_Order','Scale','Offset','Unit'
+  ])
 }
 </script>
 
