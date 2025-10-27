@@ -56,8 +56,8 @@
 
       <template v-else-if="form.trigger.type === 'offline'">
         <el-form-item label="No updates within">
-          <el-input-number v-model="form.trigger.offline_duration.value" :min="1" />
-          <el-select v-model="form.trigger.offline_duration.unit" style="margin-left:8px; width: 120px;">
+          <el-input-number v-model="offlineValue" :min="1" />
+          <el-select v-model="offlineUnit" style="margin-left:8px; width: 120px;">
             <el-option label="sec" value="sec" />
             <el-option label="min" value="min" />
             <el-option label="hour" value="hour" />
@@ -105,9 +105,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, watch, computed } from 'vue'
 import type { FormInstance, FormRules } from 'element-plus'
-import type { AlarmRule, AlarmTrigger } from '../api/alarms'
+import type { AlarmRule, AlarmTrigger, OfflineDuration } from '../api/alarms'
 import PointSelector from './PointSelector.vue'
 
 const props = defineProps<{ mode: 'create' | 'edit'; initialValue: AlarmRule | null }>()
@@ -175,6 +175,32 @@ function onPointSelected(row: { server_id: string; device_id: string; name: stri
   }
   pointSelectorVisible.value = false
 }
+
+const offlineValue = computed<number>({
+  get() {
+    return form.trigger.offline_duration?.value ?? 5
+  },
+  set(v: number) {
+    if (!form.trigger.offline_duration) {
+      form.trigger.offline_duration = { value: v, unit: 'min' }
+    } else {
+      form.trigger.offline_duration.value = v
+    }
+  }
+})
+
+const offlineUnit = computed<OfflineDuration['unit']>({
+  get() {
+    return form.trigger.offline_duration?.unit ?? 'min'
+  },
+  set(u: OfflineDuration['unit']) {
+    if (!form.trigger.offline_duration) {
+      form.trigger.offline_duration = { value: 5, unit: u }
+    } else {
+      form.trigger.offline_duration.unit = u
+    }
+  }
+})
 </script>
 
 <style scoped>
