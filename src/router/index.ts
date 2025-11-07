@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 const Dashboard = () => import('../views/Dashboard.vue')
 const Servers = () => import('../views/Servers.vue')
+const ServerMock = () => import('../views/ServerMock.vue')
 const Devices = () => import('../views/Devices.vue')
 const Points = () => import('../views/Points.vue')
 const PointProperties = () => import('../views/PointProperties.vue')
@@ -19,6 +20,7 @@ const router = createRouter({
     { path: '/doses', component: Doses },
     { path: '/analysis', component: Analysis },
     { path: '/servers', component: Servers },
+    { path: '/servers/:id/mock', component: ServerMock },
     { path: '/devices', component: Devices },
     { path: '/points', component: Points },
     { path: '/point-properties', component: PointProperties },

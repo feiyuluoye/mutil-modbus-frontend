@@ -47,7 +47,7 @@
         <el-table-column prop="Enabled" label="Enabled" width="90">
           <template #default="{ row }"><el-tag :type="row.Enabled ? 'success' : 'info'">{{ row.Enabled ? 'ON' : 'OFF' }}</el-tag></template>
         </el-table-column>
-        <el-table-column label="Actions" width="220">
+        <el-table-column label="Actions" width="300">
           <template #default="{ row }">
             <el-button size="small" @click="edit(row)">Edit</el-button>
             <el-popconfirm title="Delete this server?" @confirm="remove(row)">
@@ -55,6 +55,7 @@
                 <el-button size="small" type="danger">Delete</el-button>
               </template>
             </el-popconfirm>
+            <el-button size="small" type="warning" @click="goMock(row)">Mock</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -125,6 +126,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { createServer, updateServer, deleteServer } from '../api/db'
 import { useAppStore } from '../stores/app'
 
@@ -132,6 +134,7 @@ const app = useAppStore()
 const servers = computed(() => app.servers)
 const drawer = ref(false)
 const form = ref<any>({})
+const router = useRouter()
 
 onMounted(async () => { await app.loadServers() })
 
@@ -181,6 +184,10 @@ async function save() {
 async function remove(row:any) {
   await deleteServer(row.ServerID)
   await app.loadServers()
+}
+
+function goMock(row: any) {
+  router.push(`/servers/${row.ServerID}/mock`)
 }
 </script>
 
