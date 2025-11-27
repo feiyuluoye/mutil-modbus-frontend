@@ -54,16 +54,14 @@ CSV 导入接口（由前端通过 `frontend/src/api/import.ts` 调用）：
 
 ### Page Show
 
-![截屏2025-11-27 15.37.50](/Users/apple/Desktop/截图/截屏2025-11-27 15.37.50.png)
+![Dashboard](./images/dashboard.png)
 
-![截屏2025-11-27 15.38.21](/Users/apple/Desktop/截图/截屏2025-11-27 15.38.21.png)
+![Analysis](./images/analysis.png)
 
-![截屏2025-11-27 15.38.42](/Users/apple/Desktop/截图/截屏2025-11-27 15.38.42.png)
+![Alarm Rules](./images/rules.png)
 
-![截屏2025-11-27 15.38.47](/Users/apple/Desktop/截图/截屏2025-11-27 15.38.47.png)
+![Point Properties](./images/pointProperties.png)
 
-![截屏2025-11-27 15.38.58](/Users/apple/Desktop/截图/截屏2025-11-27 15.38.58.png)
+![CSV Import](./images/CSVImport.png)
 
-![截屏2025-11-27 15.40.18](/Users/apple/Desktop/截图/截屏2025-11-27 15.40.18.png)
-
-![截屏2025-11-27 15.40.33](/Users/apple/Desktop/截图/截屏2025-11-27 15.40.33.png)
+![Points Show](./images/pointsShow.png)
