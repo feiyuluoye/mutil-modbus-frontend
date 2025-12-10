@@ -34,6 +34,49 @@
 
       <el-card class="mt16" shadow="never">
         <template #header>
+          <div class="card-header">Mock 配置（CSV 绑定）</div>
+        </template>
+        <div class="mock-config">
+          <div class="mock-row">
+            <span class="label">当前 CSV：</span>
+            <span v-if="mockConfig.mock_csv_path" class="value">{{ mockConfig.mock_csv_path }}</span>
+            <span v-else class="muted">未绑定，请上传 CSV 文件</span>
+          </div>
+          <div class="mock-row">
+            <span class="label">更新间隔：</span>
+            <el-input
+              v-model="mockUpdateInterval"
+              placeholder="例如 3s 或 5s"
+              size="small"
+              style="width: 160px"
+            />
+          </div>
+          <div class="mock-row">
+            <el-upload
+              :auto-upload="false"
+              :show-file-list="false"
+              :on-change="onFileChange"
+              accept=".csv"
+            >
+              <el-button type="primary" size="small">选择 CSV 文件</el-button>
+            </el-upload>
+            <span class="ml8 muted" v-if="selectedFileName">{{ selectedFileName }}</span>
+            <el-button
+              class="ml8"
+              type="success"
+              size="small"
+              :disabled="!selectedFile || loadingUpload"
+              :loading="loadingUpload"
+              @click="uploadCSV"
+            >
+              上传并绑定
+            </el-button>
+          </div>
+        </div>
+      </el-card>
+
+      <el-card class="mt16" shadow="never">
+        <template #header>
           <div class="card-header">运行状态与进程信息</div>
         </template>
         <div v-if="execState">
@@ -51,7 +94,7 @@
 import { onMounted, onUnmounted, ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getServer } from '../api/db'
-import { enableServer, disableServer, getExecState } from '../api/runtime'
+import { enableServer, disableServer, getExecState, getMockConfig, uploadMockCSV } from '../api/runtime'
 import { useAppStore } from '../stores/app'
 
 const route = useRoute()
@@ -60,6 +103,11 @@ const server = ref<any>(null)
 const loading = ref(false)
 const timer = ref<number | null>(null)
 const execState = ref<any>(null)
+const mockConfig = ref<any>({})
+const mockUpdateInterval = ref<string>('')
+const selectedFile = ref<File | null>(null)
+const selectedFileName = ref('')
+const loadingUpload = ref(false)
 
 const sid = computed(() => String(route.params.id || ''))
 
@@ -80,14 +128,49 @@ async function fetchData() {
   server.value = res.data?.data || res.data
 }
 
+async function fetchMockConfig() {
+  const res = await getMockConfig(sid.value)
+  mockConfig.value = res.data || {}
+  if (mockConfig.value.mock_update_interval) {
+    mockUpdateInterval.value = mockConfig.value.mock_update_interval
+  }
+}
+
 async function refreshExecState() {
   const res = await getExecState(sid.value)
   execState.value = res.data || {}
 }
 
+function onFileChange(file: any) {
+  selectedFile.value = file?.raw || null
+  selectedFileName.value = file?.name || ''
+}
+
+async function uploadCSV() {
+  if (!selectedFile.value) return
+  loadingUpload.value = true
+  try {
+    const form = new FormData()
+    form.append('file', selectedFile.value)
+    if (mockUpdateInterval.value) form.append('update_interval', mockUpdateInterval.value)
+    const res = await uploadMockCSV(sid.value, form)
+    mockConfig.value = res.data || {}
+    if (mockConfig.value.mock_update_interval) {
+      mockUpdateInterval.value = mockConfig.value.mock_update_interval
+    }
+  } finally {
+    loadingUpload.value = false
+  }
+}
+
 async function start() {
   loading.value = true
   try {
+    // 可选：简单校验一下是否已绑定 CSV
+    if (!mockConfig.value.mock_csv_path) {
+      // eslint-disable-next-line no-console
+      console.warn('当前 server 未绑定 mock CSV，启动可能会失败')
+    }
     await enableServer(sid.value)
     await refreshExecState()
   } finally { loading.value = false }
@@ -105,6 +188,7 @@ function goBack() { router.back() }
 
 onMounted(async () => {
   await fetchData()
+  await fetchMockConfig()
   await refreshExecState()
   // poll exec_state every 2s
   timer.value = window.setInterval(refreshExecState, 2000)
@@ -121,4 +205,8 @@ onUnmounted(() => { if (timer.value) window.clearInterval(timer.value) })
 .card-header { font-weight: 600; }
 .proc { background: #0b1020; color: #cde1ff; padding: 12px; border-radius: 6px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 12px; overflow: auto; }
 .muted { color: #888; }
+.mock-config { font-size: 13px; }
+.mock-row { margin-bottom: 8px; display: flex; align-items: center; }
+.label { width: 80px; color: #666; }
+.value { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
 </style>

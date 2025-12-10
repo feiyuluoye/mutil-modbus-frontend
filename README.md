@@ -1,7 +1,5 @@
 ## Frontend Web UI
 
-
-
 ### Tech Stack
 
 - Vue 3 + Vite
@@ -52,16 +50,17 @@ CSV 导入接口（由前端通过 `frontend/src/api/import.ts` 调用）：
 
 上传文件字段名统一为 `file`，Content-Type 为 `multipart/form-data`。
 
-### Page Show
+### 部分界面展示
 
-![Dashboard](./images/dashboard.png)
 
-![Analysis](./images/analysis.png)
+**![**Dashboard**](**./images/dashboard.png**)**
 
-![Alarm Rules](./images/rules.png)
+![**Analysis**](**./images/analysis.png**)
 
-![Point Properties](./images/pointProperties.png)
+![**Alarm Rules**](**./images/rules.png**)
 
-![CSV Import](./images/CSVImport.png)
+![**Point Properties**](**./images/pointProperties.png**)
 
-![Points Show](./images/pointsShow.png)
+![**CSV Import**](**./images/CSVImport.png**)
+
+![**Points Show**](**./images/pointsShow.png**)
