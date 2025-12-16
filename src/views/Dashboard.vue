@@ -26,6 +26,7 @@
       <el-table :data="runtimePreview" height="200">
         <el-table-column prop="server" label="Server" width="220" />
         <el-table-column prop="device" label="Device" width="220" />
+        <el-table-column prop="connectedLabel" label="Connected" width="140" />
         <el-table-column prop="status" label="Status" />
       </el-table>
     </el-card>
@@ -77,11 +78,17 @@ const collectorsCount = computed(() => app.stats.collectors)
 
 const runtimeRunning = computed(() => app.runtimeRunning)
 const loadingRuntime = computed(() => app.loadingRuntime)
-const runtimePreview = computed(() => runtimeRunning.value.slice(0, 10).map((r:any) => ({
-  server: r.server_id ?? r.ServerID ?? r.server ?? r.ServerName ?? '',
-  device: r.device_id ?? r.DeviceID ?? r.device ?? '',
-  status: r.status ?? (r.Enabled === true ? 'enabled' : (r.Enabled === false ? 'disabled' : ''))
-})))
+const runtimePreview = computed(() => runtimeRunning.value.slice(0, 10).map((r:any) => {
+  const status = r.status ?? (r.Enabled === true ? 'enabled' : (r.Enabled === false ? 'disabled' : ''))
+  const connected = typeof r.connected === 'boolean' ? r.connected : status === 'running'
+  return {
+    server: r.server_id ?? r.ServerID ?? r.server ?? r.ServerName ?? '',
+    device: r.device_id ?? r.DeviceID ?? r.device ?? '',
+    connected,
+    connectedLabel: connected ? 'Yes' : 'No',
+    status,
+  }
+}))
 
 const rows = ref<PointMsg[]>([])
 const MAX_ROWS = 500
