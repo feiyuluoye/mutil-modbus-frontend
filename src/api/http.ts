@@ -1,6 +1,8 @@
 import axios from 'axios'
 
 export const http = axios.create({
-  baseURL: 'http://localhost:8080/api/v1',
-  timeout: 15000,
+	// Use relative base URL so that dev environment goes through Vite proxy (/api -> backend)
+	// and production can be served behind the same origin.
+	baseURL: '/api/v1',
+	timeout: 15000,
 })
