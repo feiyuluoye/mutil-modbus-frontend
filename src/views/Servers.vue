@@ -65,6 +65,9 @@
       <el-form :model="form" label-width="140px">
         <el-form-item label="Server ID"><el-input v-model="form.ServerID" :disabled="!!form._edit"/></el-form-item>
         <el-form-item label="Name"><el-input v-model="form.ServerName"/></el-form-item>
+        <template v-if="isRTU(form.Protocol)">
+          <el-form-item label="Mock Server"><el-switch v-model="form.IsMock"/></el-form-item>
+        </template>
         <el-form-item label="Protocol">
           <el-select v-model="form.Protocol" @change="onProtocolChange">
             <el-option label="Modbus TCP" value="modbus-tcp"/>
@@ -80,38 +83,47 @@
         
         <!-- RTU Parameters -->
         <template v-else>
-          <el-form-item label="Serial Port"><el-input v-model="form.Path" placeholder="/dev/ttyUSB0 or COM1"/></el-form-item>
-          <el-form-item label="Baud Rate">
-            <el-select v-model="form.BaudRate">
-              <el-option :label="1200" :value="1200"/>
-              <el-option :label="2400" :value="2400"/>
-              <el-option :label="4800" :value="4800"/>
-              <el-option :label="9600" :value="9600"/>
-              <el-option :label="19200" :value="19200"/>
-              <el-option :label="38400" :value="38400"/>
-              <el-option :label="57600" :value="57600"/>
-              <el-option :label="115200" :value="115200"/>
-            </el-select>
-          </el-form-item>
-          <el-form-item label="Data Bits">
-            <el-select v-model="form.DataBits">
-              <el-option :label="7" :value="7"/>
-              <el-option :label="8" :value="8"/>
-            </el-select>
-          </el-form-item>
-          <el-form-item label="Stop Bits">
-            <el-select v-model="form.StopBits">
-              <el-option :label="1" :value="1"/>
-              <el-option :label="2" :value="2"/>
-            </el-select>
-          </el-form-item>
-          <el-form-item label="Parity">
-            <el-select v-model="form.Parity">
-              <el-option label="None" value="N"/>
-              <el-option label="Even" value="E"/>
-              <el-option label="Odd" value="O"/>
-            </el-select>
-          </el-form-item>
+          <template v-if="!form.IsMock">
+            <el-form-item label="Serial Port"><el-input v-model="form.Path" placeholder="/dev/ttyUSB0 or COM1"/></el-form-item>
+            <el-form-item label="Baud Rate">
+              <el-select v-model="form.BaudRate">
+                <el-option :label="1200" :value="1200"/>
+                <el-option :label="2400" :value="2400"/>
+                <el-option :label="4800" :value="4800"/>
+                <el-option :label="9600" :value="9600"/>
+                <el-option :label="19200" :value="19200"/>
+                <el-option :label="38400" :value="38400"/>
+                <el-option :label="57600" :value="57600"/>
+                <el-option :label="115200" :value="115200"/>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="Data Bits">
+              <el-select v-model="form.DataBits">
+                <el-option :label="7" :value="7"/>
+                <el-option :label="8" :value="8"/>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="Stop Bits">
+              <el-select v-model="form.StopBits">
+                <el-option :label="1" :value="1"/>
+                <el-option :label="2" :value="2"/>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="Parity">
+              <el-select v-model="form.Parity">
+                <el-option label="None" value="N"/>
+                <el-option label="Even" value="E"/>
+                <el-option label="Odd" value="O"/>
+              </el-select>
+            </el-form-item>
+          </template>
+          <template v-else>
+            <el-alert
+              type="info"
+              show-icon
+              :closable="false"
+              title="Mock RTU server: 启动时会自动生成虚拟串口，无需手动填写串口参数" />
+          </template>
         </template>
         
         <el-form-item label="Enabled"><el-switch v-model="form.Enabled"/></el-form-item>
@@ -152,7 +164,8 @@ function openCreate() {
     DataBits: 8,
     StopBits: 1,
     Parity: 'N',
-    Enabled: true 
+    Enabled: true,
+    IsMock: true,
   }
   drawer.value = true 
 }
@@ -172,10 +185,17 @@ function onProtocolChange() {
 }
 
 async function save() {
-  if (form.value._edit) {
-    await updateServer(form.value.ServerID, form.value)
+  const f = form.value
+  // 对于非 Mock 的 RTU Server，要求填写串口地址
+  if (isRTU(f.Protocol) && !f.IsMock && !f.Path) {
+    // 这里不引入额外依赖，简单用 alert 提示即可
+    window.alert('非 Mock RTU Server 需要填写串口 Serial Port')
+    return
+  }
+  if (f._edit) {
+    await updateServer(f.ServerID, f)
   } else {
-    await createServer(form.value)
+    await createServer(f)
   }
   drawer.value = false
   await app.loadServers()

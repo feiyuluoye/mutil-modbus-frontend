@@ -236,27 +236,52 @@ function onSizeChange(s: number) {
 </script>
 
 <style scoped>
-.grid { display: grid; grid-template-rows: auto auto 1fr; gap: 16px; }
-.stats { display:grid; grid-template-columns: repeat(3, minmax(160px, 1fr)); gap:16px; }
-.filters { display:flex; gap:12px; margin-bottom:12px; }
-.summary { color:#94a3b8; margin: 4px 0 8px; }
-.pager { display:flex; justify-content:flex-end; margin-top:8px; }
-.runtime-head { display:flex; align-items:center; gap:12px; margin-bottom:8px; }
-.runtime-head .title{ font-weight:700; color:#e2e8f0; }
-.runtime-head .muted{ color:#94a3b8; flex:1 }
-.metric {
-  background: linear-gradient(135deg, #0f172a 0%, #1f2937 100%);
-  border: 1px solid #1f2937;
-  padding: 12px 16px;
-  border-radius: 8px;
+.grid { 
+  display: grid; 
+  grid-template-rows: auto auto 1fr; 
+  gap: 24px; 
 }
-.metric .label {
-  color: #94a3b8;
-  font-size: 12px;
+
+.stats { 
+  display: grid; 
+  grid-template-columns: repeat(3, minmax(200px, 1fr)); 
+  gap: 20px; 
 }
-.metric .value {
-  color: #60a5fa;
-  font-size: 24px;
-  font-weight: 700;
+
+.filters { 
+  display: flex; 
+  gap: 12px; 
+  margin-bottom: 16px; 
+}
+
+.summary { 
+  color: var(--color-text-secondary); 
+  margin: 8px 0 12px;
+  font-size: 14px;
+}
+
+.pager { 
+  display: flex; 
+  justify-content: flex-end; 
+  margin-top: 16px; 
+}
+
+.runtime-head { 
+  display: flex; 
+  align-items: center; 
+  gap: 16px; 
+  margin-bottom: 16px; 
+}
+
+.runtime-head .title { 
+  font-weight: 700; 
+  color: var(--color-text);
+  font-size: 16px;
+}
+
+.runtime-head .muted { 
+  color: var(--color-text-secondary); 
+  flex: 1;
+  font-size: 14px;
 }
 </style>

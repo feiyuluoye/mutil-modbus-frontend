@@ -65,9 +65,21 @@
         </el-form-item>
         <el-form-item label="Name"><el-input v-model="form.Name" :disabled="!!form._edit"/></el-form-item>
         <el-form-item label="Address"><el-input-number v-model="form.Address" :min="0" :step="1" style="width:100%" /></el-form-item>
-        <el-form-item label="RegisterType"><el-input v-model="form.RegisterType"/></el-form-item>
-        <el-form-item label="DataType"><el-input v-model="form.DataType"/></el-form-item>
-        <el-form-item label="ByteOrder"><el-input v-model="form.ByteOrder"/></el-form-item>
+        <el-form-item label="RegisterType">
+          <el-select v-model="form.RegisterType" placeholder="Select register type" style="width:100%">
+            <el-option v-for="opt in registerTypeOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="DataType">
+          <el-select v-model="form.DataType" placeholder="Select data type" style="width:100%">
+            <el-option v-for="opt in dataTypeOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="ByteOrder">
+          <el-select v-model="form.ByteOrder" placeholder="Select byte order" style="width:100%">
+            <el-option v-for="opt in byteOrderOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
+          </el-select>
+        </el-form-item>
         <el-form-item label="Unit"><el-input v-model="form.Unit"/></el-form-item>
         <el-form-item label="Scale"><el-input-number v-model="form.Scale" :step="0.1" style="width:100%" /></el-form-item>
         <el-form-item label="Offset"><el-input-number v-model="form.Offset" :step="0.1" style="width:100%" /></el-form-item>
@@ -101,6 +113,28 @@ const canNext = ref(false)
 
 const drawer = ref(false)
 const form = ref<any>({})
+
+const registerTypeOptions = [
+  { label: 'holding (保持寄存器)', value: 'holding' },
+  { label: 'input (输入寄存器)', value: 'input' },
+  { label: 'coil (线圈)', value: 'coil' },
+  { label: 'discrete (离散量)', value: 'discrete' },
+]
+
+const dataTypeOptions = [
+  { label: 'uint16', value: 'uint16' },
+  { label: 'int16', value: 'int16' },
+  { label: 'uint32', value: 'uint32' },
+  { label: 'int32', value: 'int32' },
+  { label: 'float32', value: 'float32' },
+]
+
+const byteOrderOptions = [
+  { label: 'ABCD (高字节在前)', value: 'ABCD' },
+  { label: 'DCBA', value: 'DCBA' },
+  { label: 'BADC', value: 'BADC' },
+  { label: 'CDAB', value: 'CDAB' },
+]
 
 onMounted(async () => {
   const s = await listServers()
@@ -156,7 +190,16 @@ async function prevPage() { if (page.value <= 1) return; page.value -= 1; await 
 async function resetAndQuery() { page.value = 1; await query() }
 
 function openCreate() {
-  form.value = { Enabled: true, ServerID: sid.value || '', DeviceID: did.value || '', Scale: 1, Offset: 0 }
+  form.value = {
+    Enabled: true,
+    ServerID: sid.value || '',
+    DeviceID: did.value || '',
+    Scale: 1,
+    Offset: 0,
+    RegisterType: 'holding',
+    DataType: 'uint16',
+    ByteOrder: 'ABCD',
+  }
   drawer.value = true
 }
 
